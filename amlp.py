@@ -35,19 +35,19 @@ class AMLPClassifier(sklearn.neural_network.MLPClassifier):
         self.coefs_[layer_idx] = np.hstack(
             [
                 self.coefs_[layer_idx],
-                np.random.randn(self.coefs_[layer_idx].shape[0], 1)
+                np.random.randn(self.coefs_[layer_idx].shape[0], 1) * .001
             ]
         )
         self.coefs_[layer_idx + 1] = np.vstack(
             [
                 self.coefs_[layer_idx + 1],
-                np.random.randn(1, self.coefs_[layer_idx + 1].shape[1])
+                np.random.randn(1, self.coefs_[layer_idx + 1].shape[1]) * .001
             ]
         )
         self.intercepts_[layer_idx] = np.hstack(
             [
                 self.intercepts_[layer_idx],
-                np.random.randn(1)
+                np.zeros((1,))
             ]
         )
 
@@ -63,18 +63,22 @@ class AMLPClassifier(sklearn.neural_network.MLPClassifier):
                    for idx in range(len(self.hidden_layer_size_ranges)))
 
     def fit(self, X, y):
-        result = super(AMLPClassifier, self).fit(X, y)
+        result = super(AMLPClassifier, self)._fit(X, y)
         while self.can_adapt():
+            del self._optimizer
+            self._no_improvement_count = 0
+            self.best_loss_ = self.loss_curve_[-1] + self.tol
             self.adapt()
-            result = super(AMLPClassifier, self).fit(X, y)
+            print self.hidden_layer_sizes
+            result = super(AMLPClassifier, self)._fit(X, y)
         return result
 
-if __name__ == "__main__":
+
+def test_model():
     model = AMLPClassifier(
         hidden_layer_size_ranges=((5, 100), (2, 100)),
-        verbose=True
+        verbose=True,
     )
     X = np.random.randn(10000, 2)
     y = np.ravel(np.dot(X * X, np.ones((2, 1))) > 1)
-    print model.fit(X, y)
-
+    return X, y, model
