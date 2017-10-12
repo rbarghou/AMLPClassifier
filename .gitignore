@@ -49,3 +49,6 @@ fabric.properties
 
 # ython
 *.pyc
+
+# Jupyter
+.ipynb_checkpoints
